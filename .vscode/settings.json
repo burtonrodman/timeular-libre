@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^dotnet build TimeularLibre\\\\TimeularLibre\\.csproj -c Debug$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

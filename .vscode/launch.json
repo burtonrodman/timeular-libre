@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": ".NET: TimeularLibre (External Console)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/TimeularLibre/bin/Debug/net8.0-windows10.0.19041.0/TimeularLibre.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/TimeularLibre",
+      "stopAtEntry": false,
+      "console": "externalTerminal"
+    }
+  ]
+}

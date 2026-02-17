@@ -41,6 +41,7 @@ dotnet run
 
 The application will:
 1. Prompt you to select your Timeular device via the system Bluetooth dialog
+   - Note: On some console-only platforms the system picker may be unavailable. In that case the app will attempt to list paired devices or allow you to save a DeviceId manually (see "Manual device configuration" below).
 2. Connect to the device
 3. Start listening for flip events
 4. Log all events to a JSON file
@@ -89,6 +90,18 @@ You can customize the labels for each side:
   }
 }
 ```
+
+#### Manual device configuration (console-only platforms)
+
+If the OS/system Bluetooth picker is not available from a console app the program cannot show the device selection dialog. In that case you can:
+
+- Pair the Timeular device in OS Bluetooth settings and run the app again; or
+- Manually add the device ID to `config.json` under `DeviceId`; or
+- Use the built-in CLI to save a device id:
+
+  - Save device id: `dotnet run -- --device-id <device-id>`
+
+After adding a `DeviceId` the app will prefer the configured device on startup.
 
 ## Device Information
 
