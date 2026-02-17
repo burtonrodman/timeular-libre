@@ -62,15 +62,17 @@ Configuration is stored at:
 
 ### Event Log Format
 
-Each event is logged as a JSON object:
+Events are logged in JSON Lines format (one JSON object per line):
 ```json
 {
-  "Timestamp": "2026-02-17T01:00:00.000",
+  "Timestamp": "2026-02-17T01:00:00.000Z",
   "EventType": "Flip",
   "Details": "Side 3",
   "Orientation": 3
 }
 ```
+
+Note: Timestamps are stored in UTC format for consistency across time zones.
 
 ### Configuration File Format
 

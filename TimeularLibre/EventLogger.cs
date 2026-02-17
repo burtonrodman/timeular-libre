@@ -33,7 +33,7 @@ public class EventLogger
         {
             var logEntry = new EventLog
             {
-                Timestamp = DateTime.Now,
+                Timestamp = DateTime.UtcNow,
                 EventType = eventType,
                 Details = details,
                 Orientation = orientation
@@ -64,12 +64,12 @@ public class EventLogger
             if (!File.Exists(_logFilePath))
                 return events;
 
-            var lines = File.ReadAllLines(_logFilePath);
+            // Use File.ReadLines for streaming to avoid loading entire file into memory
             var jsonObjects = new List<string>();
             var currentJson = "";
 
-            // Parse multi-line JSON objects
-            foreach (var line in lines)
+            // Parse multi-line JSON objects (JSON Lines format)
+            foreach (var line in File.ReadLines(_logFilePath))
             {
                 currentJson += line;
                 if (line.TrimEnd().EndsWith("}"))

@@ -141,9 +141,9 @@ class Program
             if (value != null && value.Length > 0)
             {
                 var orientation = value[0];
-                var timestamp = DateTime.Now;
+                var timestamp = DateTime.UtcNow;
                 
-                string side = orientation == 0 ? "No orientation" : 
+                string side = orientation == 0 ? "No orientation" :
                     (_config?.SideLabels.ContainsKey(orientation) == true ? 
                         _config.SideLabels[orientation] : 
                         $"Side {orientation}");
