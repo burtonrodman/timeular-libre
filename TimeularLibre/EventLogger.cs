@@ -41,7 +41,7 @@ public class EventLogger
 
             var json = JsonSerializer.Serialize(logEntry, new JsonSerializerOptions 
             { 
-                WriteIndented = true 
+                WriteIndented = false  // JSON Lines format - one compact JSON per line
             });
 
             lock (_lockObject)
@@ -64,23 +64,24 @@ public class EventLogger
             if (!File.Exists(_logFilePath))
                 return events;
 
-            // Use File.ReadLines for streaming to avoid loading entire file into memory
-            var jsonObjects = new List<string>();
-            var currentJson = "";
+            // Use a queue to keep only the most recent entries while streaming
+            var recentJsonObjects = new Queue<string>(count);
 
-            // Parse multi-line JSON objects (JSON Lines format)
+            // Parse JSON Lines format - one JSON object per line
             foreach (var line in File.ReadLines(_logFilePath))
             {
-                currentJson += line;
-                if (line.TrimEnd().EndsWith("}"))
-                {
-                    jsonObjects.Add(currentJson);
-                    currentJson = "";
-                }
+                if (string.IsNullOrWhiteSpace(line))
+                    continue;
+
+                // Maintain a sliding window of recent entries
+                if (recentJsonObjects.Count >= count)
+                    recentJsonObjects.Dequeue();
+                
+                recentJsonObjects.Enqueue(line);
             }
 
-            // Take the most recent entries
-            foreach (var json in jsonObjects.TakeLast(count))
+            // Deserialize the most recent entries
+            foreach (var json in recentJsonObjects)
             {
                 try
                 {
