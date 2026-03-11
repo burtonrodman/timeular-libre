@@ -1,4 +1,5 @@
 using InTheHand.Bluetooth;
+using Microsoft.Extensions.Logging;
 
 namespace Timeular.Core;
 
@@ -6,15 +7,23 @@ public class BluetoothCubeListener : ICubeListener
 {
     private const string ORIENTATION_UUID = "c7e70012-c847-11e6-8175-8c89a55d403c";
     public TimeularConfig Config { get; set; }
-    private readonly EventLogger? _logger;
+    private readonly EventLogger? _eventLogger;
+    private readonly ILogger<BluetoothCubeListener>? _logger;
     private CancellationTokenSource? _cts;
 
     public event EventHandler<FlipEventArgs>? FlipOccurred;
 
-    public BluetoothCubeListener(TimeularConfig config, EventLogger? logger = null)
+    public BluetoothCubeListener(TimeularConfig config, EventLogger? eventLogger = null, ILogger<BluetoothCubeListener>? logger = null)
     {
         Config = config;
+        _eventLogger = eventLogger;
         _logger = logger;
+    }
+
+    private void Log(string eventType, string details, int? orientation = null)
+    {
+        _eventLogger?.LogEvent(eventType, details, orientation);
+        _logger?.LogInformation("{EventType}: {Details}", eventType, details);
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -30,7 +39,7 @@ public class BluetoothCubeListener : ICubeListener
             }
             catch (Exception ex)
             {
-                _logger?.LogEvent("Error", ex.Message);
+                Log("Error", ex.Message);
                 await Task.Delay(5000, token);
             }
         }
@@ -70,7 +79,7 @@ public class BluetoothCubeListener : ICubeListener
             {
                 selectedInfo = devices.FirstOrDefault(d => d.Id == Config.DeviceId || d.Name == Config.DeviceName);
                 if (selectedInfo != null)
-                    _logger?.LogEvent("Info", $"Using configured device: {selectedInfo.Name ?? selectedInfo.Id}");
+                    Log("Info",$"Using configured device: {selectedInfo.Name ?? selectedInfo.Id}");
             }
 
             var trackers = devices.Where(d => string.Equals(d.Name, "Timeular Tracker", StringComparison.OrdinalIgnoreCase)).ToList();
@@ -81,7 +90,7 @@ public class BluetoothCubeListener : ICubeListener
             {
                 if (devices.Count == 0)
                 {
-                    _logger?.LogEvent("Info", "No BLE devices found.");
+                    Log("Info","No BLE devices found.");
                     return false;
                 }
                 // pick first
@@ -92,7 +101,7 @@ public class BluetoothCubeListener : ICubeListener
             if (bleDevice == null)
                 return true;
 
-            _logger?.LogEvent("Connected", bleDevice.Name ?? selectedInfo.Id);
+            Log("Connected",bleDevice.Name ?? selectedInfo.Id);
             if (Config != null)
             {
                 Config.DeviceId = selectedInfo.Id;
@@ -134,7 +143,7 @@ public class BluetoothCubeListener : ICubeListener
                 byte orientation = reader.UnconsumedBufferLength > 0 ? reader.ReadByte() : (byte)0;
                 lastOrientation = orientation;
                 var side = orientation == 0 ? "No orientation" : (Config.SideLabels.TryGetValue(orientation, out var lab) ? lab : $"Side {orientation}");
-                _logger?.LogEvent("Flip", side, orientation);
+                Log("Flip", side, orientation);
                 FlipOccurred?.Invoke(this, new FlipEventArgs(orientation, side));
             };
 
@@ -165,7 +174,7 @@ public class BluetoothCubeListener : ICubeListener
                             {
                                 lastOrientation = val;
                                 var side = val == 0 ? "No orientation" : (Config.SideLabels.TryGetValue(val, out var lab) ? lab : $"Side {val}");
-                                _logger?.LogEvent("Flip", side, val);
+                                Log("Flip", side, val);
                                 FlipOccurred?.Invoke(this, new FlipEventArgs(val, side));
                             }
                         }
@@ -192,7 +201,7 @@ public class BluetoothCubeListener : ICubeListener
         }
         catch (Exception ex)
         {
-            _logger?.LogEvent("Error", ex.Message);
+            Log("Error", ex.Message);
             return false;
         }
     }
@@ -210,7 +219,7 @@ public class BluetoothCubeListener : ICubeListener
             if (trackers.Count == 1)
             {
                 device = trackers[0];
-                _logger?.LogEvent("Info", "Auto-selecting paired Timeular Tracker (single match).");
+                Log("Info","Auto-selecting paired Timeular Tracker (single match).");
             }
         }
         catch { }
@@ -226,12 +235,12 @@ public class BluetoothCubeListener : ICubeListener
 
         if (device == null)
         {
-            _logger?.LogEvent("Info", "No device available");
+            _logger?.LogDebug("No BLE device available, retrying...");
             return;
         }
 
         await device.Gatt.ConnectAsync();
-        _logger?.LogEvent("Connected", device.Name ?? "Unknown");
+        Log("Connected",device.Name ?? "Unknown");
 
         if (Config != null)
         {
@@ -268,7 +277,7 @@ public class BluetoothCubeListener : ICubeListener
             {
                 var orientation = value[0];
                 var side = orientation == 0 ? "No orientation" : (Config.SideLabels.TryGetValue(orientation, out var lab) ? lab : $"Side {orientation}");
-                _logger?.LogEvent("Flip", side, orientation);
+                Log("Flip", side, orientation);
                 FlipOccurred?.Invoke(this, new FlipEventArgs(orientation, side));
             }
         };
@@ -290,7 +299,7 @@ public class BluetoothCubeListener : ICubeListener
                         {
                             last = val;
                             var side = val == 0 ? "No orientation" : (Config.SideLabels.TryGetValue(val, out var lab) ? lab : $"Side {val}");
-                            _logger?.LogEvent("Flip", side, val);
+                            Log("Flip", side, val);
                             FlipOccurred?.Invoke(this, new FlipEventArgs(val, side));
                         }
                     }

@@ -1,6 +1,7 @@
 using Timeular.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Timeular.Service;
 
 Host.CreateDefaultBuilder(args)
@@ -41,8 +42,9 @@ Host.CreateDefaultBuilder(args)
         {
             var cfgProv = sp.GetRequiredService<IConfigProvider>();
             var cfg = cfgProv.GetConfigAsync().GetAwaiter().GetResult();
-            var logger = sp.GetRequiredService<EventLogger>();
-            return new BluetoothCubeListener(cfg, logger);
+            var eventLogger = sp.GetRequiredService<EventLogger>();
+            var logger = sp.GetRequiredService<ILogger<BluetoothCubeListener>>();
+            return new BluetoothCubeListener(cfg, eventLogger, logger);
         });
 
         services.AddHostedService<Worker>();
