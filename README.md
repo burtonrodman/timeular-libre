@@ -1,15 +1,55 @@
 # Timeular Libre
 
-A .NET application to use the Timeular device without a subscription. This app can detect when the device is flipped and maintain a local log of all events.
+A .NET-based system composed of a shared core library, a Windows background service that listens to the Timeular cube, and an optional cloud-hosted web interface. The service detects flips, logs events locally, and can launch a browser to the web UI with the action name as a parameter.
 
 ## Features
 
 - **Flip Detection**: Detects when the Timeular device is flipped to any of its 8 sides
 - **Event Logging**: Maintains a local JSON log of all flip events with timestamps
-- **Configuration**: Customizable side labels stored in a configuration file
+- **Configuration**: Customizable side labels stored in a configuration file (local or remote)
 - **Auto-Reconnection**: Automatically attempts to reconnect if the connection is lost
-- **Cross-Platform**: Built with .NET 8.0 for cross-platform support
+- **Windows Service**: Runs as a background worker that launches a browser on flips
+- **Config Refresh**: Periodically reloads configuration from a remote endpoint
+- **Cross-Platform**: Core library supports any .NET 8.0 host (service, CLI, tests)
 - **Bluetooth LE**: Uses Bluetooth Low Energy for wireless communication
+
+## Architecture Overview
+
+The solution now consists of several projects:
+
+- `Timeular.Core` – shared library containing device logic, models, and interfaces
+- `Timeular.Service` – Windows worker service that listens to the cube and launches actions
+- `Timeular.Web` – optional cloud-hosted web UI for recording actions and integrating with Azure DevOps
+- `Timeular.Core.Tests` – unit tests covering core components and the service worker
+
+The service loads configuration locally or via HTTP, starts a cube listener, and responds to flips by logging events and opening the configured URL.
+
+## Running the Service
+
+To run the service for local debugging:
+
+```bash
+cd Timeular.Service
+dotnet run
+```
+
+In production the project can be published and installed as a Windows service using `sc.exe` or `New-Service`. Configuration values (remote endpoint URL, logging paths, etc.) are provided via `appsettings.json` or environment variables (`Config__ConfigUrl`).
+
+The web application includes a simple `/config` GET endpoint that returns a JSON representation of `TimeularConfig`, which the service can poll. Replace the sample implementation with your own logic (e.g. user-specific configurations stored in a database).
+
+The service respects ◦ `IConfigProvider` implementations; by default it fetches `https://example.com/config` if configured, otherwise uses `%APPDATA%\TimeularLibre\config.json`.
+
+## Testing
+
+Unit tests live in `Timeular.Core.Tests`. They exercise the launcher logic and worker behavior.
+
+Run them with:
+
+```bash
+dotnet test Timeular.Core.Tests/Timeular.Core.Tests.csproj
+```
+
+Any changes to core interfaces should be accompanied by new tests.
 
 ## Requirements
 
@@ -108,6 +148,37 @@ After adding a `DeviceId` the app will prefer the configured device on startup.
 The Timeular device is a Bluetooth LE device shaped like a D8 dice with 8 sides. Each side can be used to track different activities. When flipped:
 - Orientation values: 0 (no orientation/flat) or 1-8 (corresponding to each side)
 - Events are detected in real-time via Bluetooth notifications
+
+## Architecture
+
+The codebase is now divided into three projects:
+
+1. **Timeular.Core** – a class library containing shared models, Bluetooth
+   cube logic, configuration providers, event logging, and helper interfaces.
+   Other projects reference this library.
+2. **Timeular.Service** – a Windows background worker that keeps the cube
+   connected, listens for flips, logs events, and launches the system browser
+   to a fixed web URL whenever an action occurs. Configuration is retrieved
+   from a remote API (or a local file as a fallback).
+3. **Timeular.Web** – an ASP.NET Core web application hosted in the cloud.
+   The service opens the browser to this site with `?action=<name>`. The
+   page lets the user record the action or optionally query Azure DevOps
+   work items and attach the action to one.
+
+### Running the service
+
+1. Build the solution: `dotnet build` from the root folder.
+2. Configure the remote endpoint via `appsettings.json` or the
+   `Config:ConfigUrl` environment variable. This URL should return a
+   JSON payload matching `TimeularConfig`.
+3. Install the service using `sc.exe` or `New-Service` and start it, or
+   run `dotnet run` inside `Timeular.Service` for console debugging.
+4. When the cube is flipped the service will open the system browser to
+   the web interface with the action name encoded as a query parameter.
+
+The legacy console application (`TimeularLibre`) remains for
+local experimentation but has been simplified to delegate most work to
+`Timeular.Core`.
 
 ## Technical Details
 

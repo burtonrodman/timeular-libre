@@ -1,3 +1,9 @@
 <Solution>
+  <Project Path="timeular-libre.AppHost/timeular-libre.AppHost.csproj" />
+  <Project Path="timeular-libre.ServiceDefaults/timeular-libre.ServiceDefaults.csproj" />
+  <Project Path="Timeular.Core.Tests/Timeular.Core.Tests.csproj" />
+  <Project Path="Timeular.Core/Timeular.Core.csproj" />
+  <Project Path="Timeular.Service/Timeular.Service.csproj" />
+  <Project Path="Timeular.Web/Timeular.Web.csproj" />
   <Project Path="TimeularLibre/TimeularLibre.csproj" />
 </Solution>

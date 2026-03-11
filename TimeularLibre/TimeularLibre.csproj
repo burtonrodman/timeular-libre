@@ -10,5 +10,8 @@
   <ItemGroup>
     <PackageReference Include="InTheHand.BluetoothLE" Version="4.0.44" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Timeular.Core\Timeular.Core.csproj" />
+  </ItemGroup>
 
 </Project>

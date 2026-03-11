@@ -1,0 +1,32 @@
+@page
+@model Timeular.Web.Pages.DevOpsModel
+@{
+    ViewData["Title"] = "DevOps Work Items";
+    var action = Model.Action;
+}
+
+<h2>Log "@action" to DevOps</h2>
+
+<form method="post">
+    <input type="hidden" asp-for="Action" />
+    <div class="mb-3">
+        <label asp-for="Organization"></label>
+        <input asp-for="Organization" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label asp-for="Project"></label>
+        <input asp-for="Project" class="form-control" />
+    </div>
+    <button class="btn btn-primary" asp-page-handler="List">List Work Items</button>
+</form>
+
+@if (Model.WorkItems != null)
+{
+    <h3>Work Items</h3>
+    <ul>
+        @foreach(var wi in Model.WorkItems)
+        {
+            <li>@wi</li>
+        }
+    </ul>
+}

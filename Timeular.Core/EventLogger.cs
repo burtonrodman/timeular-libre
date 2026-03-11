@@ -1,14 +1,6 @@
 using System.Text.Json;
 
-namespace TimeularLibre;
-
-public class EventLog
-{
-    public DateTime Timestamp { get; set; }
-    public string EventType { get; set; } = string.Empty;
-    public string Details { get; set; } = string.Empty;
-    public int? Orientation { get; set; }
-}
+namespace Timeular.Core;
 
 public class EventLogger
 {
@@ -18,13 +10,9 @@ public class EventLogger
     public EventLogger(string logFilePath)
     {
         _logFilePath = logFilePath;
-        
-        // Ensure directory exists
         var directory = Path.GetDirectoryName(_logFilePath);
         if (!string.IsNullOrEmpty(directory))
-        {
             Directory.CreateDirectory(directory);
-        }
     }
 
     public void LogEvent(string eventType, string details, int? orientation = null)
@@ -39,9 +27,9 @@ public class EventLogger
                 Orientation = orientation
             };
 
-            var json = JsonSerializer.Serialize(logEntry, new JsonSerializerOptions 
-            { 
-                WriteIndented = false  // JSON Lines format - one compact JSON per line
+            var json = JsonSerializer.Serialize(logEntry, new JsonSerializerOptions
+            {
+                WriteIndented = false
             });
 
             lock (_lockObject)
@@ -49,38 +37,30 @@ public class EventLogger
                 File.AppendAllText(_logFilePath, json + Environment.NewLine);
             }
         }
-        catch (Exception ex)
+        catch
         {
-            Console.WriteLine($"Failed to log event: {ex.Message}");
+            // swallow; service should not crash for logging errors
         }
     }
 
     public List<EventLog> GetRecentEvents(int count = 100)
     {
         var events = new List<EventLog>();
-        
         try
         {
             if (!File.Exists(_logFilePath))
                 return events;
 
-            // Use a queue to keep only the most recent entries while streaming
             var recentJsonObjects = new Queue<string>(count);
-
-            // Parse JSON Lines format - one JSON object per line
             foreach (var line in File.ReadLines(_logFilePath))
             {
                 if (string.IsNullOrWhiteSpace(line))
                     continue;
-
-                // Maintain a sliding window of recent entries
                 if (recentJsonObjects.Count >= count)
                     recentJsonObjects.Dequeue();
-                
                 recentJsonObjects.Enqueue(line);
             }
 
-            // Deserialize the most recent entries
             foreach (var json in recentJsonObjects)
             {
                 try
@@ -89,17 +69,10 @@ public class EventLogger
                     if (entry != null)
                         events.Add(entry);
                 }
-                catch
-                {
-                    // Skip malformed entries
-                }
+                catch { }
             }
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Failed to read events: {ex.Message}");
-        }
-
+        catch { }
         return events;
     }
 }

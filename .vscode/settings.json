@@ -3,6 +3,9 @@
         "/^dotnet build TimeularLibre\\\\TimeularLibre\\.csproj -c Debug$/": {
             "approve": true,
             "matchCommandLine": true
-        }
+        },
+        "dotnet new": true,
+        "dotnet sln": true,
+        "dotnet build": true
     }
 }
