@@ -36,7 +36,8 @@ namespace Timeular.Core.Tests
                 };
             });
             var client = new HttpClient(handler);
-            var provider = new HttpConfigProvider(client, "http://test/config");
+            var mockLogger = new Mock<ILogger<HttpConfigProvider>>();
+            var provider = new HttpConfigProvider(client, "http://test/config", mockLogger.Object);
             var cfg = await provider.GetConfigAsync();
             Assert.Equal("x", cfg.WebInterfaceUrl);
         }

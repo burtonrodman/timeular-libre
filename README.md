@@ -158,23 +158,39 @@ The codebase is now divided into three projects:
    Other projects reference this library.
 2. **Timeular.Service** – a Windows background worker that keeps the cube
    connected, listens for flips, logs events, and launches the system browser
-   to a fixed web URL whenever an action occurs. Configuration is retrieved
-   from a remote API (or a local file as a fallback).
+   to the configured web interface with the selected action as a query
+   parameter. The service obtains its `WebInterfaceUrl` from configuration
+   (either via HTTP from the web app’s `/config` endpoint or from a local
+   `config.json` file) and passes that URL plus the action name to an
+   `IActionLauncher`.
 3. **Timeular.Web** – an ASP.NET Core web application hosted in the cloud.
-   The service opens the browser to this site with `?action=<name>`. The
-   page lets the user record the action or optionally query Azure DevOps
-   work items and attach the action to one.
+   In development the app returns its own base URL from `/config`, so running
+   the service against a locally‑hosted instance automatically causes flips
+   to open a browser pointed at the correct host. The UI displays the action
+   and provides links for recording it or attaching to Azure DevOps work items.
 
 ### Running the service
 
 1. Build the solution: `dotnet build` from the root folder.
 2. Configure the remote endpoint via `appsettings.json` or the
-   `Config:ConfigUrl` environment variable. This URL should return a
-   JSON payload matching `TimeularConfig`.
+   `Config:ConfigUrl` environment variable. This URL should point at the
+   web app’s `/config` endpoint and return a JSON payload matching
+   `TimeularConfig` (in development the JSON itself will include the
+   current host address). **For convenience the service will now automatically
+   probe the two common localhost URLs (`http://localhost:5036/config` and
+   `https://localhost:7031/config`) if it’s running in a Development
+   environment and you haven’t supplied any `ConfigUrl` – so simply starting
+   both projects side‑by‑side is sufficient for local debugging.**
+
+   If you start the service with no working HTTP endpoint it falls back to a
+   local file provider; `WebInterfaceUrl` will be left empty and the worker
+   will log a warning to that effect.
 3. Install the service using `sc.exe` or `New-Service` and start it, or
    run `dotnet run` inside `Timeular.Service` for console debugging.
-4. When the cube is flipped the service will open the system browser to
-   the web interface with the action name encoded as a query parameter.
+5. When the cube is flipped the service logs the event and then invokes the
+   `IActionLauncher`; with the default implementation this simply calls
+   `Process.Start` to open the system browser to the configured URL
+   (e.g. `http://localhost:5036/?action=Work`).
 
 The legacy console application (`TimeularLibre`) remains for
 local experimentation but has been simplified to delegate most work to

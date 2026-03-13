@@ -8,11 +8,13 @@ builder.Services.AddRazorPages();
 var app = builder.Build();
 
 // simple config endpoint for service polling
-app.MapGet("/config", () =>
+app.MapGet("/config", (HttpContext ctx) =>
 {
+    // construct absolute url for whatever host the web app is running on
+    var hostUrl = $"{ctx.Request.Scheme}://{ctx.Request.Host}";
     var sample = new Timeular.Core.TimeularConfig
     {
-        WebInterfaceUrl = "https://example.com/", // replace with actual URL
+        WebInterfaceUrl = hostUrl,
         SideLabels = new Dictionary<int, string> { {1, "Work"}, {2, "Break"} }
     };
     return Results.Json(sample);

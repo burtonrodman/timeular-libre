@@ -36,6 +36,11 @@ public class Worker : BackgroundService
         {
             _config = await _configProvider.GetConfigAsync(stoppingToken);
             _listener.Config = _config;
+            _logger.LogInformation("Configuration loaded; WebInterfaceUrl={url}", _config?.WebInterfaceUrl);
+            if (string.IsNullOrWhiteSpace(_config?.WebInterfaceUrl))
+            {
+                _logger.LogWarning("WebInterfaceUrl is empty; make sure Config:ConfigUrl is set or a config file contains a valid URL");
+            }
         }
         catch (Exception ex)
         {
@@ -85,6 +90,7 @@ public class Worker : BackgroundService
         var url = _config?.WebInterfaceUrl;
         if (!string.IsNullOrWhiteSpace(url))
         {
+            _logger.LogInformation("Launching browser to {url} for action {action}", url, e.Label);
             _launcher.Launch(url, e.Label);
         }
     }

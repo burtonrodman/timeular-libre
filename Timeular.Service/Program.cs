@@ -23,9 +23,26 @@ Host.CreateDefaultBuilder(args)
         {
             var cfg = sp.GetRequiredService<IConfiguration>();
             var url = cfg["Config:ConfigUrl"];
+
+            // if nothing has been configured and we're running under a dev
+            // environment, try a couple of common localhost addresses so that
+            // running the web project alongside the service "just works".
+            if (string.IsNullOrWhiteSpace(url) &&
+                sp.GetRequiredService<IHostEnvironment>().IsDevelopment())
+            {
+                var client = new HttpClient();
+                url = DevConfigUrlResolver.TryResolve(client);
+                if (!string.IsNullOrWhiteSpace(url))
+                {
+                    var log = sp.GetService<ILogger<Program>>();
+                    log?.LogInformation("Auto-detected development config URL: {url}", url);
+                }
+            }
+
             if (!string.IsNullOrWhiteSpace(url))
             {
-                return new HttpConfigProvider(new HttpClient(), url);
+                var logger = sp.GetService<ILogger<HttpConfigProvider>>();
+                return new HttpConfigProvider(new HttpClient(), url, logger);
             }
             else
             {
