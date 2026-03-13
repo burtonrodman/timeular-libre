@@ -6,6 +6,10 @@
         },
         "dotnet new": true,
         "dotnet sln": true,
-        "dotnet build": true
+        "dotnet build": true,
+        "dotnet add": true,
+        "dotnet ef": true,
+        "dotnet tool": true,
+        "dotnet run": true
     }
 }

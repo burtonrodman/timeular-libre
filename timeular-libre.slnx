@@ -3,7 +3,6 @@
   <Project Path="timeular-libre.ServiceDefaults/timeular-libre.ServiceDefaults.csproj" />
   <Project Path="Timeular.Core.Tests/Timeular.Core.Tests.csproj" />
   <Project Path="Timeular.Core/Timeular.Core.csproj" />
-  <Project Path="Timeular.Service/Timeular.Service.csproj" />
-  <Project Path="Timeular.Web/Timeular.Web.csproj" />
-  <Project Path="TimeularLibre/TimeularLibre.csproj" />
+  <Project Path="Timeular.Desktop/Timeular.Desktop.csproj" />
+  <Project Path="Timeular.Log/Timeular.Log.csproj" />
 </Solution>

@@ -2,15 +2,35 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": ".NET: TimeularLibre (External Console)",
+      "name": "Timeular.Log (API)",
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build",
-      "program": "${workspaceFolder}/TimeularLibre/bin/Debug/net8.0-windows10.0.19041.0/TimeularLibre.dll",
+      "program": "${workspaceFolder}/Timeular.Log/bin/Debug/net10.0/Timeular.Log.dll",
       "args": [],
-      "cwd": "${workspaceFolder}/TimeularLibre",
+      "cwd": "${workspaceFolder}/Timeular.Log",
       "stopAtEntry": false,
-      "console": "externalTerminal"
+      "console": "internalConsole"
+    },
+    {
+      "name": "Timeular.Desktop",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/Timeular.Desktop/bin/Debug/net10.0-windows/Timeular.Desktop.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/Timeular.Desktop",
+      "stopAtEntry": false,
+      "console": "internalConsole"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "API + Desktop",
+      "configurations": [
+        "Timeular.Log (API)",
+        "Timeular.Desktop"
+      ]
     }
   ]
 }

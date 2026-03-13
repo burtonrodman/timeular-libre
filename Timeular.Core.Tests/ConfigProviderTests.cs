@@ -6,6 +6,8 @@ using System.Net.Http.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Timeular.Core;
+using Moq;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Timeular.Core.Tests

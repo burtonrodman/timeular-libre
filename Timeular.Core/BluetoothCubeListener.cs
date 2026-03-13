@@ -28,6 +28,7 @@ public class BluetoothCubeListener : ICubeListener
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
+        Log("Info","StartAsync invoked");
         _cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         var token = _cts.Token;
 
@@ -35,7 +36,9 @@ public class BluetoothCubeListener : ICubeListener
         {
             try
             {
+                Log("Info","calling ConnectAndListenAsync");
                 await ConnectAndListenAsync(token);
+                Log("Info","ConnectAndListenAsync returned");
             }
             catch (Exception ex)
             {
@@ -208,13 +211,16 @@ public class BluetoothCubeListener : ICubeListener
 #endif
     private async Task ConnectAndListenCrossPlatformAsync(CancellationToken token)
     {
+        Log("Info","ConnectAndListenCrossPlatformAsync enter");
         var options = new RequestDeviceOptions { AcceptAllDevices = true };
         options.OptionalServices.Add(BluetoothUuid.FromGuid(Guid.Parse(ORIENTATION_UUID)));
 
         BluetoothDevice? device = null;
         try
         {
+            Log("Info","querying paired devices");
             var paired = (await Bluetooth.GetPairedDevicesAsync()).ToList();
+            Log("Info","found {Count} paired devices", paired.Count);
             var trackers = paired.Where(d => string.Equals(d.Name, "Timeular Tracker", StringComparison.OrdinalIgnoreCase)).ToList();
             if (trackers.Count == 1)
             {
@@ -222,16 +228,29 @@ public class BluetoothCubeListener : ICubeListener
                 Log("Info","Auto-selecting paired Timeular Tracker (single match).");
             }
         }
-        catch { }
+        catch (Exception ex) { Log("Error","paired enumeration failed: " + ex); }
 
         if (device == null)
         {
             try
             {
+                Log("Info","prompting user for device");
                 device = await Bluetooth.RequestDeviceAsync(options);
+                Log("Info","RequestDeviceAsync returned {Device}", device?.Name);
             }
-            catch { }
+            catch (Exception ex) { Log("Error","RequestDevice failed: " + ex); }
         }
+
+        if (device == null)
+        {
+            _logger?.LogDebug("No BLE device available, retrying...");
+            Log("Info","no device selected/available");
+            return;
+        }
+
+        Log("Info","connecting to device " + device.Name);
+        await device.Gatt.ConnectAsync();
+        Log("Connected",device.Name ?? "Unknown");
 
         if (device == null)
         {

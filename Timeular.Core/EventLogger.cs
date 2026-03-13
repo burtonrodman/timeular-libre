@@ -6,42 +6,50 @@ public class EventLogger
 {
     private readonly string _logFilePath;
     private readonly object _lockObject = new();
+        private readonly Func<EventLog, System.Threading.Tasks.Task>? _remoteSink;
 
-    public EventLogger(string logFilePath)
-    {
-        _logFilePath = logFilePath;
-        var directory = Path.GetDirectoryName(_logFilePath);
-        if (!string.IsNullOrEmpty(directory))
-            Directory.CreateDirectory(directory);
-    }
-
-    public void LogEvent(string eventType, string details, int? orientation = null)
-    {
-        try
+        public EventLogger(string logFilePath, Func<EventLog, System.Threading.Tasks.Task>? remoteSink = null)
         {
-            var logEntry = new EventLog
-            {
-                Timestamp = DateTime.UtcNow,
-                EventType = eventType,
-                Details = details,
-                Orientation = orientation
-            };
+            _logFilePath = logFilePath;
+            _remoteSink = remoteSink;
+            var directory = Path.GetDirectoryName(_logFilePath);
+            if (!string.IsNullOrEmpty(directory))
+                Directory.CreateDirectory(directory);
+        }
 
-            var json = JsonSerializer.Serialize(logEntry, new JsonSerializerOptions
+        public void LogEvent(string eventType, string details, int? orientation = null)
+        {
+            try
             {
-                WriteIndented = false
-            });
+                var logEntry = new EventLog
+                {
+                    Timestamp = DateTime.UtcNow,
+                    EventType = eventType,
+                    Details = details,
+                    Orientation = orientation
+                };
 
-            lock (_lockObject)
+                var json = JsonSerializer.Serialize(logEntry, new JsonSerializerOptions
+                {
+                    WriteIndented = false
+                });
+
+                lock (_lockObject)
+                {
+                    File.AppendAllText(_logFilePath, json + Environment.NewLine);
+                }
+
+                // fire and forget remote sink if provided
+                if (_remoteSink != null)
+                {
+                    _ = _remoteSink(logEntry);
+                }
+            }
+            catch
             {
-                File.AppendAllText(_logFilePath, json + Environment.NewLine);
+                // swallow; service should not crash for logging errors
             }
         }
-        catch
-        {
-            // swallow; service should not crash for logging errors
-        }
-    }
 
     public List<EventLog> GetRecentEvents(int count = 100)
     {

@@ -5,46 +5,9 @@
       "label": "build",
       "command": "dotnet",
       "type": "process",
-      "args": [
-        "build",
-        "${workspaceFolder}/TimeularLibre/TimeularLibre.csproj",
-        "-c",
-        "Debug"
-      ],
-      "problemMatcher": ["$msCompile"],
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      }
-    },
-    {
-      "label": "run-service",
-      "command": "dotnet",
-      "type": "process",
-      "args": [
-        "run",
-        "--project",
-        "${workspaceFolder}/Timeular.Service/Timeular.Service.csproj"
-      ],
-      "isBackground": true,
-      "problemMatcher": []
-    },
-    {
-      "label": "run-web",
-      "command": "dotnet",
-      "type": "process",
-      "args": [
-        "run",
-        "--project",
-        "${workspaceFolder}/Timeular.Web/Timeular.Web.csproj"
-      ],
-      "isBackground": true,
-      "problemMatcher": []
-    },
-    {
-      "label": "run-all",
-      "dependsOn": ["run-service", "run-web"],
-      "dependsOrder": "parallel"
+      "args": ["build", "timeular-libre.slnx", "-c", "Debug"],
+      "problemMatcher": "$msCompile",
+      "group": "build"
     }
   ]
 }

@@ -9,8 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Timeular.Service\Timeular.Service.csproj" />
-    <ProjectReference Include="..\Timeular.Web\Timeular.Web.csproj" />
+    <ProjectReference Include="..\Timeular.Log\Timeular.Log.csproj" />
+    <ProjectReference Include="..\Timeular.Desktop\Timeular.Desktop.csproj" />
   </ItemGroup>
 
 </Project>
