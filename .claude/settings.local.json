@@ -19,7 +19,9 @@
       "Bash(dotnet package:*)",
       "Bash(dotnet remove:*)",
       "Bash(dotnet add:*)",
-      "Bash(grep -n \"GetConfigAsync\\\\|class FileConfigProvider\" d:/source/github/burtonrodman/timeular-libre/Timeular.Core/*.cs)"
+      "Bash(grep -n \"GetConfigAsync\\\\|class FileConfigProvider\" d:/source/github/burtonrodman/timeular-libre/Timeular.Core/*.cs)",
+      "Bash(grep -n \"class TimeularConfig\\\\|AutoClose\\\\|class EventLogEntry\" d:/source/github/burtonrodman/timeular-libre/Timeular.Core/*.cs d:/source/github/burtonrodman/timeular-libre/Timeular.Log/Models/*.cs)",
+      "Bash(powershell.exe -NoProfile -Command \"Get-Process -Name ''''Timeular*'''',''''*AppHost*'''' -ErrorAction SilentlyContinue | Stop-Process -Force\")"
     ]
   }
 }

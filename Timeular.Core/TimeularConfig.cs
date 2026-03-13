@@ -16,7 +16,11 @@ public class TimeularConfig
         { 8, "Side 8" }
     };
 
+    // Sides the user has explicitly named (others will prompt on first flip)
+    public HashSet<int> ConfiguredSides { get; set; } = new();
+
     // new members for action and web interface
     public Dictionary<int, string> SideActions { get; set; } = new();
     public string WebInterfaceUrl { get; set; } = string.Empty;
+    public bool AutoCloseAfterLog { get; set; } = true;
 }

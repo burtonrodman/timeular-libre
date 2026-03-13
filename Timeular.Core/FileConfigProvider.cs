@@ -31,4 +31,17 @@ public class FileConfigProvider : IConfigProvider
 
         return new TimeularConfig();
     }
+
+    public async Task SaveAsync(TimeularConfig config)
+    {
+        try
+        {
+            var dir = Path.GetDirectoryName(_configPath);
+            if (!string.IsNullOrEmpty(dir))
+                Directory.CreateDirectory(dir);
+            var json = JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true });
+            await File.WriteAllTextAsync(_configPath, json);
+        }
+        catch { }
+    }
 }

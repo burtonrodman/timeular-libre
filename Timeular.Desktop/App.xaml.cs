@@ -35,10 +35,10 @@ namespace Timeular.Desktop
                     var configPath = Path.Combine(
                         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                         "TimeularLibre", "config.json");
-                    services.AddSingleton<IConfigProvider>(
-                        _ => new FileConfigProvider(configPath));
+                    services.AddSingleton(_ => new FileConfigProvider(configPath));
+                    services.AddSingleton<IConfigProvider>(sp => sp.GetRequiredService<FileConfigProvider>());
                     services.AddSingleton(sp =>
-                        Task.Run(() => sp.GetRequiredService<IConfigProvider>().GetConfigAsync())
+                        Task.Run(() => sp.GetRequiredService<FileConfigProvider>().GetConfigAsync())
                             .GetAwaiter().GetResult());
                     services.AddSingleton<ICubeListener>(sp =>
                         new BluetoothCubeListener(
@@ -61,12 +61,17 @@ namespace Timeular.Desktop
                     catch (Exception ex) { _logger.LogError(ex, "[Desktop] listener error"); }
                 });
 
-                var config = host.Services.GetRequiredService<IConfiguration>();
-                var logApiUrl = config["services:log:https:0"]
-                    ?? config["services:log:http:0"]
+                var aspireConfig = host.Services.GetRequiredService<IConfiguration>();
+                var logApiUrl = aspireConfig["services:log:https:0"]
+                    ?? aspireConfig["services:log:http:0"]
                     ?? "https://localhost:5001";
                 _logger.LogInformation("[Desktop] log API: {Url}", logApiUrl);
-                MainWindow = new MainWindow(logApiUrl);
+
+                var cfg = host.Services.GetRequiredService<TimeularConfig>();
+                var cfgProvider = host.Services.GetRequiredService<FileConfigProvider>();
+                Func<Task> saveConfig = () => cfgProvider.SaveAsync(cfg);
+
+                MainWindow = new MainWindow(logApiUrl, cfg, saveConfig);
                 MainWindow.Hide();
 
                 try { SetupNotifyIcon(); }
@@ -135,7 +140,15 @@ namespace Timeular.Desktop
         private void OnCubeFlip(object? sender, FlipEventArgs e)
         {
             _logger?.LogInformation("[Desktop] flip: side={Side} label={Label}", e.Side, e.Label);
-            Dispatcher.Invoke(ShowEntryWindow);
+            Dispatcher.Invoke(() =>
+            {
+                if (MainWindow is MainWindow mw)
+                {
+                    mw.AddFlip(e.Side, e.Label);
+                    mw.Show();
+                    mw.Activate();
+                }
+            });
         }
 
         private void ShowSettings()
