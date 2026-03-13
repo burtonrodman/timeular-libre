@@ -75,36 +75,42 @@ public class BluetoothCubeListener : ICubeListener
         {
             var orientationGuid = Guid.Parse(ORIENTATION_UUID);
             var selector = Windows.Devices.Bluetooth.BluetoothLEDevice.GetDeviceSelector();
+            Log("Info", "Scanning for BLE devices...");
             var devices = await Windows.Devices.Enumeration.DeviceInformation.FindAllAsync(selector).AsTask(token);
+            Log("Info", $"Found {devices.Count} BLE device(s): {string.Join(", ", devices.Select(d => d.Name ?? d.Id))}");
             Windows.Devices.Enumeration.DeviceInformation? selectedInfo = null;
 
             if (!string.IsNullOrEmpty(Config.DeviceId))
             {
                 selectedInfo = devices.FirstOrDefault(d => d.Id == Config.DeviceId || d.Name == Config.DeviceName);
                 if (selectedInfo != null)
-                    Log("Info",$"Using configured device: {selectedInfo.Name ?? selectedInfo.Id}");
+                    Log("Info", $"Using configured device: {selectedInfo.Name ?? selectedInfo.Id}");
             }
-
-            var trackers = devices.Where(d => string.Equals(d.Name, "Timeular Tracker", StringComparison.OrdinalIgnoreCase)).ToList();
-            if (trackers.Count == 1 && selectedInfo == null)
-                selectedInfo = trackers[0];
 
             if (selectedInfo == null)
             {
-                if (devices.Count == 0)
-                {
-                    Log("Info","No BLE devices found.");
-                    return false;
-                }
-                // pick first
-                selectedInfo = devices[0];
+                var trackers = devices.Where(d => string.Equals(d.Name, "Timeular Tracker", StringComparison.OrdinalIgnoreCase)).ToList();
+                if (trackers.Count == 1)
+                    selectedInfo = trackers[0];
+                else if (trackers.Count > 1)
+                    Log("Info", $"Multiple Timeular Trackers found, using first: {trackers[0].Name}");
             }
 
+            if (selectedInfo == null)
+            {
+                Log("Info", "No Timeular Tracker found among BLE devices.");
+                return false;
+            }
+
+            Log("Info", $"Connecting to {selectedInfo.Name ?? selectedInfo.Id}...");
             var bleDevice = await Windows.Devices.Bluetooth.BluetoothLEDevice.FromIdAsync(selectedInfo.Id).AsTask(token);
             if (bleDevice == null)
+            {
+                Log("Info", "Failed to open BLE device handle.");
                 return true;
+            }
 
-            Log("Connected",bleDevice.Name ?? selectedInfo.Id);
+            Log("Connected", bleDevice.Name ?? selectedInfo.Id);
             if (Config != null)
             {
                 Config.DeviceId = selectedInfo.Id;
@@ -114,6 +120,7 @@ public class BluetoothCubeListener : ICubeListener
             var servicesResult = await bleDevice.GetGattServicesAsync(Windows.Devices.Bluetooth.BluetoothCacheMode.Uncached).AsTask(token);
             if (servicesResult.Status != Windows.Devices.Bluetooth.GenericAttributeProfile.GattCommunicationStatus.Success)
             {
+                Log("Info", $"GATT services query failed: {servicesResult.Status}");
                 bleDevice.Dispose();
                 return true;
             }
@@ -135,6 +142,7 @@ public class BluetoothCubeListener : ICubeListener
 
             if (orientationChar == null)
             {
+                Log("Info", "Orientation characteristic not found on device.");
                 bleDevice.Dispose();
                 return true;
             }
@@ -192,6 +200,7 @@ public class BluetoothCubeListener : ICubeListener
                 await Task.Delay(1000, token);
             }
 
+            Log("Info", $"Disconnected from {bleDevice.Name ?? selectedInfo.Id}");
             try
             {
                 await orientationChar.WriteClientCharacteristicConfigurationDescriptorAsync(Windows.Devices.Bluetooth.GenericAttributeProfile.GattClientCharacteristicConfigurationDescriptorValue.None).AsTask(token);
@@ -236,7 +245,7 @@ public class BluetoothCubeListener : ICubeListener
             {
                 Log("Info","prompting user for device");
                 device = await Bluetooth.RequestDeviceAsync(options);
-                Log("Info","RequestDeviceAsync returned {Device}", device?.Name);
+                Log("Info",$"RequestDeviceAsync returned {device?.Name}");
             }
             catch (Exception ex) { Log("Error","RequestDevice failed: " + ex); }
         }

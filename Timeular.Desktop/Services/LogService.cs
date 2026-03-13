@@ -17,13 +17,17 @@ namespace Timeular.Desktop.Services
 
         public async Task<EventLogEntry?> PostEntryAsync(EventLogEntry entry)
         {
-            var response = await _client.PostAsJsonAsync("/logs", entry);
-            if (response.IsSuccessStatusCode)
+            try
             {
-                return await response.Content.ReadFromJsonAsync<EventLogEntry>();
+                var response = await _client.PostAsJsonAsync("/logs", entry);
+                if (response.IsSuccessStatusCode)
+                    return await response.Content.ReadFromJsonAsync<EventLogEntry>();
+                return null;
             }
-
-            return null;
+            catch (HttpRequestException)
+            {
+                return null;
+            }
         }
     }
 }

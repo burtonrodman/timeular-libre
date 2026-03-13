@@ -1,7 +1,25 @@
 {
   "permissions": {
     "allow": [
-      "Bash(dotnet build:*)"
+      "Bash(dotnet build:*)",
+      "Bash(taskkill /PID 28800 /F)",
+      "Bash(cmd /c \"taskkill /PID 28800 /F\")",
+      "Bash(cmd /c \"tasklist | findstr Timeular\")",
+      "Bash(cmd /c \"handle64 -nobanner \"\"Timeular.Core.dll\"\" 2>&1 || handle -nobanner \"\"Timeular.Core.dll\"\" 2>&1 || echo handle not found\")",
+      "Bash(cmd /c \"copy \"\"D:\\\\source\\\\github\\\\burtonrodman\\\\timeular-libre\\\\Timeular.Desktop\\\\bin\\\\Debug\\\\net10.0-windows\\\\Timeular.Core.dll\"\" NUL 2>&1 && echo not locked || echo LOCKED\")",
+      "Bash(cmd /c \"del /F \"\"D:\\\\source\\\\github\\\\burtonrodman\\\\timeular-libre\\\\Timeular.Desktop\\\\bin\\\\Debug\\\\net10.0-windows\\\\Timeular.Core.dll\"\" && echo deleted\")",
+      "Bash(cmd /c \"tasklist | findstr -i \"\"msbuild\\\\|dotnet\\\\|vbc\"\"\")",
+      "Bash(dotnet clean:*)",
+      "Bash(powershell -Command \"Get-Process | Where-Object {$_Name -match ''Timeular|Aspire|dotnet''} | Select-Object Id, Name, Path\")",
+      "Bash(powershell.exe -NoProfile -Command \"Get-Process -Name ''Timeular*'',''dotnet'',''*AppHost*'' -ErrorAction SilentlyContinue | Select-Object Id,Name | Format-Table\")",
+      "Bash(powershell.exe -NoProfile -Command \"Stop-Process -Id 28800 -Force\")",
+      "Bash(powershell.exe -NoProfile -Command \":*)",
+      "Bash(dotnet list:*)",
+      "Bash(powershell.exe -NoProfile -Command \"Get-Process -Name ''Timeular*'',''*AppHost*'' -ErrorAction SilentlyContinue | Stop-Process -Force\")",
+      "Bash(dotnet package:*)",
+      "Bash(dotnet remove:*)",
+      "Bash(dotnet add:*)",
+      "Bash(grep -n \"GetConfigAsync\\\\|class FileConfigProvider\" d:/source/github/burtonrodman/timeular-libre/Timeular.Core/*.cs)"
     ]
   }
 }

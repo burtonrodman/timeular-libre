@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using Microsoft.Extensions.Logging;
 using Application = System.Windows.Application; // disambiguate from WinForms
 using Timeular.Desktop.Services;
 using Timeular.Log.Models;
@@ -12,10 +13,10 @@ public partial class MainWindow : Window
 {
     private readonly LogService _logService;
 
-    public MainWindow()
+    public MainWindow(string logApiUrl)
     {
         InitializeComponent();
-        _logService = new LogService("https://localhost:5001"); // default base URL
+        _logService = new LogService(logApiUrl);
     }
 
     private async void SubmitButton_Click(object sender, RoutedEventArgs e)
@@ -28,17 +29,11 @@ public partial class MainWindow : Window
         };
 
         var result = await _logService.PostEntryAsync(entry);
+        this.Hide();
         if (result != null)
-        {
-                // user feedback removed; just hide and log
-                this.Hide();
-                // log success via file
-                ((App)Application.Current).Log("[Desktop] entry logged successfully");
-            }
-            else
-            {
-                ((App)Application.Current).Log("[Desktop] entry logging failed");
-            }
+            ((App)Application.Current).Logger?.LogInformation("[Desktop] entry logged successfully");
+        else
+            ((App)Application.Current).Logger?.LogWarning("[Desktop] entry logging failed");
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
