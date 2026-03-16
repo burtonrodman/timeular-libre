@@ -33,21 +33,32 @@
             <StackPanel>
 
                 <!-- Side-name prompt (visible only for unconfigured sides) -->
-                <Grid x:Name="SideNameRow" Visibility="Collapsed" Margin="0,0,0,8">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBox x:Name="SideNameInput" Grid.Column="0"
-                             Background="#1E1E1E" Foreground="#D4D4D4"
-                             BorderBrush="#3C3C3C" CaretBrush="#D4D4D4"
-                             Padding="8,6" FontSize="13"
-                             KeyDown="SideNameInput_KeyDown"
-                             ToolTip="Give this side a name, then press Enter"/>
-                    <TextBlock Grid.Column="1" Text="Name this side"
-                               Foreground="#858585" FontSize="11"
-                               VerticalAlignment="Center" Margin="8,0,0,0"/>
-                </Grid>
+                <Border x:Name="SideNameRow" Visibility="Collapsed" Margin="0,0,0,8"
+                        Background="#1A2433" BorderThickness="0,0,0,0"
+                        CornerRadius="4">
+                    <Border.Effect>
+                        <DropShadowEffect Color="#007ACC" BlurRadius="12" ShadowDepth="0" Opacity="0.4"/>
+                    </Border.Effect>
+                    <Grid>
+                        <!-- Blue accent bar on left -->
+                        <Border Width="3" HorizontalAlignment="Left" Background="#007ACC" CornerRadius="4,0,0,4"/>
+                        <StackPanel Margin="14,10,10,10">
+                            <TextBlock Text="NEW SIDE DETECTED"
+                                       Foreground="#007ACC" FontSize="10" FontWeight="Bold"
+                                       Margin="0,0,0,6"/>
+                            <TextBox x:Name="SideNameInput"
+                                     Background="#0D1929" Foreground="#D4D4D4"
+                                     BorderBrush="#007ACC" BorderThickness="0,0,0,1"
+                                     CaretBrush="#D4D4D4" SelectionBrush="#007ACC"
+                                     Padding="4,6" FontSize="14"
+                                     KeyDown="SideNameInput_KeyDown"
+                                     ToolTip="Give this side a name, then press Enter"/>
+                            <TextBlock Text="Enter to confirm · Esc to skip"
+                                       Foreground="#4A6A8A" FontSize="10"
+                                       Margin="0,5,0,0"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
 
                 <!-- Description input row -->
                 <Grid x:Name="DescriptionRow">

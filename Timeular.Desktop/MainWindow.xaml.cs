@@ -66,14 +66,14 @@ public partial class MainWindow : Window
             SideNameInput.Text = label == $"Side {side}" ? "" : label;
             SideNameRow.Visibility = Visibility.Visible;
             DescriptionRow.IsEnabled = false;
-            SideNameInput.Focus();
+            Dispatcher.BeginInvoke(SideNameInput.Focus, System.Windows.Threading.DispatcherPriority.Input);
         }
         else
         {
             SideNameRow.Visibility = Visibility.Collapsed;
             DescriptionRow.IsEnabled = true;
             DescriptionInput.Text = "";
-            DescriptionInput.Focus();
+            Dispatcher.BeginInvoke(DescriptionInput.Focus, System.Windows.Threading.DispatcherPriority.Input);
         }
     }
 
