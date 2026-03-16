@@ -1,0 +1,5 @@
+- [x] load recent entries (last 20 entries) from database and display in the chat window
+- [ ] when prompting for an unknown side, focus the input text box
+- log stop time when computer locks
+- log start time when computer resumes/logs in
+- pull meeting info from Google Calendar

@@ -29,5 +29,18 @@ namespace Timeular.Desktop.Services
                 return null;
             }
         }
+
+        public async Task<List<EventLogEntry>> GetRecentEntriesAsync(int limit = 20)
+        {
+            try
+            {
+                var entries = await _client.GetFromJsonAsync<List<EventLogEntry>>($"/logs?limit={limit}");
+                return entries ?? [];
+            }
+            catch (HttpRequestException)
+            {
+                return [];
+            }
+        }
     }
 }

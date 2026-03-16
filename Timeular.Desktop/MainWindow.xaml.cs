@@ -30,13 +30,27 @@ public partial class MainWindow : Window
         AutoCloseCheckbox.IsChecked = config.AutoCloseAfterLog;
     }
 
-    private void Window_Loaded(object sender, RoutedEventArgs e)
+    private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
         var area = SystemParameters.WorkArea;
         Width  = area.Width  * 0.80;
         Height = area.Height * 0.80;
         Left   = area.Left + (area.Width  - Width)  / 2;
         Top    = area.Top  + (area.Height - Height) / 2;
+
+        var recent = await _logService.GetRecentEntriesAsync(20);
+        foreach (var entry in recent)
+        {
+            var item = new FlipHistoryItem
+            {
+                Time = entry.Timestamp.ToLocalTime(),
+                Side = 0,
+                Label = entry.EventType ?? ""
+            };
+            item.MarkLogged(entry.Description ?? "");
+            _history.Add(item);
+        }
+        ScrollToBottom();
     }
 
     public void AddFlip(int side, string label)
